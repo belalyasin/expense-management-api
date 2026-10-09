@@ -78,9 +78,10 @@ const ExpenseController = {
             // Filter expenses for the current month
             const currentMonthExpenses = expenses.filter((expense) => {
                 const expenseDate = new Date(expense.date);
+                // Dates are compared in UTC so the result does not depend on the server's time zone
                 return (
-                    expenseDate.getMonth() === currentMonth &&
-                    expenseDate.getFullYear() === currentYear
+                    expenseDate.getUTCMonth() === currentMonth &&
+                    expenseDate.getUTCFullYear() === currentYear
                 );
             });
 
@@ -123,9 +124,10 @@ const ExpenseController = {
             // Filter expenses for the current month
             const currentMonthExpenses = expenses.filter((expense) => {
                 const expenseDate = new Date(expense.date);
+                // Dates are compared in UTC so the result does not depend on the server's time zone
                 return (
-                    expenseDate.getMonth() === currentMonth &&
-                    expenseDate.getFullYear() === currentYear
+                    expenseDate.getUTCMonth() === currentMonth &&
+                    expenseDate.getUTCFullYear() === currentYear
                 );
             });
 
@@ -178,9 +180,10 @@ const ExpenseController = {
             // Filter expenses for the current month
             const currentMonthExpenses = expenses.filter((expense) => {
                 const expenseDate = new Date(expense.date);
+                // Dates are compared in UTC so the result does not depend on the server's time zone
                 return (
-                    expenseDate.getMonth() === currentMonth &&
-                    expenseDate.getFullYear() === currentYear
+                    expenseDate.getUTCMonth() === currentMonth &&
+                    expenseDate.getUTCFullYear() === currentYear
                 );
             });
 
