@@ -3,19 +3,20 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
+    "start": "node index.js",
     "dev": "nodemon index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/belalyasin/Expense_Management_Api.git"
+    "url": "git+https://github.com/belalyasin/expense-management-api.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/belalyasin/Expense_Management_Api/issues"
+    "url": "https://github.com/belalyasin/expense-management-api/issues"
   },
-  "homepage": "https://github.com/belalyasin/Expense_Management_Api#readme",
+  "homepage": "https://github.com/belalyasin/expense-management-api#readme",
   "description": "",
   "dependencies": {
     "bcrypt": "^5.1.1",

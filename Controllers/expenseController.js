@@ -1,6 +1,6 @@
-const User = require("../models/User");
-const Category = require("../models/Category");
-const Expense = require("../models/Expenses");
+const User = require("../Models/User");
+const Category = require("../Models/Category");
+const Expense = require("../Models/Expenses");
 const mongoose = require("mongoose");
 const jwt = require('jsonwebtoken');
 

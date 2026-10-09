@@ -1,6 +1,6 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const User = require("../models/User");
+const User = require("../Models/User");
 const {hash} = require("bcrypt");
 const mongoose = require("mongoose");
 
