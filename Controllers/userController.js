@@ -10,7 +10,7 @@ const UserController = {
         try {
             User.find({email: req.body.email})
                 .exec().then((user) => {
-                if (user.length > 1) {
+                if (user.length >= 1) {
                     return res.status(409).json({message: "Mail Exists"})
                 } else {
                     bcrypt.hash(req.body.password, 10, (error, hash) => {
@@ -105,6 +105,12 @@ const UserController = {
             // res.status(500).json({error: 'Error setting income', details: err.message});
             // return res.status(401).json({error: 'Invalid or expired token', details: err.message});
         }
+    },
+
+    // Profile of the logged-in user
+    me: async (req, res) => {
+        const {firstname, lastname, username, email, monthlyIncome} = req.user;
+        res.status(200).json({user: {firstname, lastname, username, email, monthlyIncome}});
     },
 
     logout: async (req, res) => {

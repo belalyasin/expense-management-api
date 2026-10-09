@@ -4,6 +4,17 @@ const Expense = require("../Models/Expenses");
 const mongoose = require("mongoose");
 const jwt = require('jsonwebtoken');
 
+// Month to report on. Defaults to the current month; accepts ?month=1-12&year=YYYY.
+// Returns {month, year} with a zero-based month, or null when the query is invalid.
+const resolvePeriod = (query = {}) => {
+    const now = new Date();
+    const month = query.month === undefined ? now.getMonth() + 1 : Number(query.month);
+    const year = query.year === undefined ? now.getFullYear() : Number(query.year);
+    if (!Number.isInteger(month) || month < 1 || month > 12) return null;
+    if (!Number.isInteger(year) || year < 1970 || year > 9999) return null;
+    return {month: month - 1, year};
+};
+
 const ExpenseController = {
     // Add a new expense
     addExpense: async (req, res) => {
@@ -55,9 +66,11 @@ const ExpenseController = {
                 return res.status(400).json({error: "Invalid user token"});
             }
 
-            const currentDate = new Date();
-            const currentMonth = currentDate.getMonth();
-            const currentYear = currentDate.getFullYear();
+            const period = resolvePeriod(req.query);
+            if (!period) {
+                return res.status(400).json({error: "Invalid month or year"});
+            }
+            const {month: currentMonth, year: currentYear} = period;
 
             // Find all expenses for the user
             const expenses = await Expense.find({user: userId}).populate('category');
@@ -75,6 +88,8 @@ const ExpenseController = {
 
             res.status(200).json({
                 message: "Expenses for the current month",
+                month: currentMonth + 1,
+                year: currentYear,
                 expenses: currentMonthExpenses,
                 totalExpenses,
             });
@@ -96,9 +111,11 @@ const ExpenseController = {
                 return res.status(400).json({error: "Invalid user token"});
             }
 
-            const currentDate = new Date();
-            const currentMonth = currentDate.getMonth();
-            const currentYear = currentDate.getFullYear();
+            const period = resolvePeriod(req.query);
+            if (!period) {
+                return res.status(400).json({error: "Invalid month or year"});
+            }
+            const {month: currentMonth, year: currentYear} = period;
 
             // Find all expenses for the user
             const expenses = await Expense.find({user: userId}).populate('category');
@@ -125,6 +142,8 @@ const ExpenseController = {
 
             res.status(200).json({
                 message: "Current month statistics",
+                month: currentMonth + 1,
+                year: currentYear,
                 totalExpenses,
                 remainingIncome,
                 averageDailyExpense,
@@ -147,9 +166,11 @@ const ExpenseController = {
                 return res.status(400).json({error: "Invalid user token"});
             }
 
-            const currentDate = new Date();
-            const currentMonth = currentDate.getMonth();
-            const currentYear = currentDate.getFullYear();
+            const period = resolvePeriod(req.query);
+            if (!period) {
+                return res.status(400).json({error: "Invalid month or year"});
+            }
+            const {month: currentMonth, year: currentYear} = period;
 
             // Find all expenses for the user
             const expenses = await Expense.find({user: userId}).populate('category');
@@ -165,17 +186,66 @@ const ExpenseController = {
 
             // Group expenses by category and calculate total for each
             const categoryStatistics = currentMonthExpenses.reduce((stats, expense) => {
-                const categoryName = expense.category.name; // Assumes 'name' field exists in Category model
+                const categoryName = expense.category ? expense.category.name : 'Uncategorized';
                 stats[categoryName] = (stats[categoryName] || 0) + expense.amount;
                 return stats;
             }, {});
 
             res.status(200).json({
                 message: "Expense type statistics for the current month",
+                month: currentMonth + 1,
+                year: currentYear,
                 categoryStatistics,
             });
         } catch (err) {
             res.status(500).json({error: "Error fetching expense type statistics", details: err.message});
+        }
+    },
+    // Update an expense that belongs to the logged-in user
+    updateExpense: async (req, res) => {
+        try {
+            const {expenseId} = req.params;
+            if (!mongoose.isValidObjectId(expenseId)) {
+                return res.status(404).json({error: "Expense not found"});
+            }
+            const expense = await Expense.findOne({_id: expenseId, user: req.userId});
+            if (!expense) {
+                return res.status(404).json({error: "Expense not found"});
+            }
+
+            const {amount, description, category: categoryName, date} = req.body;
+            if (categoryName !== undefined) {
+                const category = await Category.findOne({name: categoryName});
+                if (!category) {
+                    return res.status(404).json({error: "Category not found"});
+                }
+                expense.category = category._id;
+            }
+            if (amount !== undefined) expense.amount = amount;
+            if (description !== undefined) expense.description = description;
+            if (date !== undefined) expense.date = date;
+
+            await expense.save();
+            await expense.populate('category');
+            res.status(200).json({message: "Expense updated successfully", expense});
+        } catch (err) {
+            res.status(400).json({error: "Error updating expense", details: err.message});
+        }
+    },
+    // Delete an expense that belongs to the logged-in user
+    deleteExpense: async (req, res) => {
+        try {
+            const {expenseId} = req.params;
+            if (!mongoose.isValidObjectId(expenseId)) {
+                return res.status(404).json({error: "Expense not found"});
+            }
+            const expense = await Expense.findOneAndDelete({_id: expenseId, user: req.userId});
+            if (!expense) {
+                return res.status(404).json({error: "Expense not found"});
+            }
+            res.status(200).json({message: "Expense deleted successfully", expenseId});
+        } catch (err) {
+            res.status(500).json({error: "Error deleting expense", details: err.message});
         }
     }
 };

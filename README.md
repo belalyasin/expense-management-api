@@ -8,9 +8,9 @@ The Angular client lives in [expense-management-angular](https://github.com/bela
 
 - Register, log in and log out with JWT tokens (passwords hashed with bcrypt)
 - Set a monthly income per user
-- Create expense categories
-- Add expenses under a category
-- Current-month expense list, monthly totals and statistics by category
+- Create, list, rename and delete expense categories
+- Add, edit and delete expenses under a category
+- Expense list, monthly totals and statistics by category for any month
 
 ## Tech stack
 
@@ -38,20 +38,34 @@ Environment variables:
 
 All routes are under `/api`. Routes marked with a lock need an `Authorization: Bearer <token>` header.
 
+**Users**
+
 | Method | Route | Auth | Body |
 | --- | --- | --- | --- |
 | POST | `/user/register` | | `firstname`, `lastname`, `username`, `email`, `password` (8+ characters) |
 | POST | `/user/login` | | `email`, `password`. Returns a token valid for 1 hour |
+| GET | `/user/me` | lock | |
 | POST | `/user/income` | lock | `monthlyIncome` |
 | POST | `/user/logout` | lock | |
+
+**Categories**
+
+| Method | Route | Auth | Body |
+| --- | --- | --- | --- |
+| GET | `/category` | lock | |
 | POST | `/category/create` | lock | `name`, `description` |
+| PUT | `/category/:categoryId` | lock | `name`, `description` (either or both) |
+| DELETE | `/category/:categoryId` | lock | Returns 409 while expenses still use the category |
+
+**Expenses**
+
+| Method | Route | Auth | Body |
+| --- | --- | --- | --- |
 | POST | `/expense/create` | lock | `amount`, `category` (category name), optional `description`, `date` |
+| PUT | `/expense/:expenseId` | lock | Any of `amount`, `category`, `description`, `date` |
+| DELETE | `/expense/:expenseId` | lock | |
 | GET | `/expense/monthly_expenses` | lock | |
 | GET | `/expense/monthly_statics` | lock | |
 | GET | `/expense/expense_type_statistics` | lock | |
 
-## Roadmap
-
-- List, update and delete categories
-- Update and delete expenses
-- Statistics for a chosen month instead of only the current one
+The three GET routes report on the current month by default. Add `?month=1-12&year=YYYY` to report on another month. Users can only read, change and delete their own expenses.

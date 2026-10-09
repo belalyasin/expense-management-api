@@ -10,6 +10,7 @@ router.post("/register", UserController.register);
 router.post("/login", UserController.login);
 // router.post("/income", UserController.income);
 router.route("/income").post(auth,UserController.income);
+router.route("/me").get(auth, UserController.me);
 // router.post("/logout", UserController.logout);
 router.route("/logout").post(auth, UserController.logout);
 
